@@ -23,7 +23,7 @@ app.use(limiter);
 // 3. Authentication Middleware
 const authenticate = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
-    
+
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
@@ -46,11 +46,10 @@ app.get('/health', (req, res) => {
 
 // Public Routes (No Auth needed)
 app.use('/api/users/auth', proxy(process.env.USER_SERVICE_URL + '/auth'));
-app.use('/api/events/public', proxy(process.env.EVENT_SERVICE_URL + '/public'));
+app.use('/api/events', proxy(process.env.EVENT_SERVICE_URL + '/events'));
 
 // Protected Routes (Require JWT)
 app.use('/api/users/profile', authenticate, proxy(process.env.USER_SERVICE_URL + '/profile'));
-app.use('/api/events/manage', authenticate, proxy(process.env.EVENT_SERVICE_URL + '/manage'));
 app.use('/api/tickets', authenticate, proxy(process.env.TICKET_SERVICE_URL));
 
 // Error handling for proxy
