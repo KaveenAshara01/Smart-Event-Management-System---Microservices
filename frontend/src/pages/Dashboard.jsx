@@ -56,13 +56,13 @@ const Dashboard = () => {
 
                 {/* Stats / Action Cards (Placeholders) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                            <Calendar className="text-blue-600" />
+                    <Link to="/events" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
+                        <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors group-hover:bg-blue-600">
+                            <Calendar className="text-blue-600 transition-colors group-hover:text-white" />
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 mb-1">Upcoming Events</h3>
                         <p className="text-gray-500 text-sm">Discover and book new experiences.</p>
-                    </div>
+                    </Link>
 
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                         <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
