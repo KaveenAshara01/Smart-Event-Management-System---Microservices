@@ -6,6 +6,7 @@ import Profile from './pages/Profile';
 import Events from './pages/Events';
 import CreateEvent from './pages/CreateEvent';
 import EventDetails from './pages/EventDetails';
+import MyTickets from './pages/MyTickets';
 import { useAuth } from './context/AuthContext';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/events" element={user ? <Events /> : <Navigate to="/login" />} />
                 <Route path="/events/create" element={user ? <CreateEvent /> : <Navigate to="/login" />} />
                 <Route path="/events/:id" element={user ? <EventDetails /> : <Navigate to="/login" />} />
+                <Route path="/my-tickets" element={user ? <MyTickets /> : <Navigate to="/login" />} />
                 <Route path="/" element={<Navigate to="/login" />} />
             </Routes>
         </div>

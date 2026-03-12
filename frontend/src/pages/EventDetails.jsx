@@ -8,6 +8,8 @@ const EventDetails = () => {
     const { id } = useParams();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [booking, setBooking] = useState(false);
+    const [bookedTicket, setBookedTicket] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,6 +26,22 @@ const EventDetails = () => {
         };
         fetchEvent();
     }, [id, navigate]);
+
+    const handleBook = async () => {
+        setBooking(true);
+        try {
+            const res = await axios.post('/api/tickets/book', { eventId: id });
+            setBookedTicket(res.data.ticket);
+            // Refresh event data to show updated seats
+            const eventRes = await axios.get(`/api/events/${id}`);
+            setEvent(eventRes.data);
+        } catch (err) {
+            console.error('Booking failed:', err);
+            alert(err.response?.data?.message || 'Booking failed. Please try again.');
+        } finally {
+            setBooking(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -81,6 +99,23 @@ const EventDetails = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Main Description */}
                     <div className="lg:col-span-2 space-y-12">
+                        {bookedTicket && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-green-50 border border-green-100 p-8 rounded-[40px] flex flex-col md:flex-row items-center gap-8 shadow-sm"
+                            >
+                                <div className="bg-white p-4 rounded-3xl shadow-md">
+                                    <img src={bookedTicket.qrCode} alt="Ticket QR" className="w-32 h-32" />
+                                </div>
+                                <div className="flex-1 text-center md:text-left">
+                                    <h3 className="text-2xl font-bold text-green-800 mb-2 underline underline-offset-4 decoration-green-200">Booking Successful!</h3>
+                                    <p className="text-green-700">Your ticket has been confirmed. You can find it in 'My Tickets'.</p>
+                                    <Link to="/my-tickets" className="inline-block mt-4 text-green-800 font-bold hover:underline">View All Tickets →</Link>
+                                </div>
+                            </motion.div>
+                        )}
+
                         <section className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm border border-gray-100">
                             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                                 <Bookmark className="w-6 h-6 text-primary-600" />
@@ -134,11 +169,12 @@ const EventDetails = () => {
                             </div>
 
                             <button
-                                disabled={event.availableSeats === 0}
+                                onClick={handleBook}
+                                disabled={event.availableSeats === 0 || booking}
                                 className="w-full btn-primary h-14 text-lg shadow-xl shadow-primary-200 flex items-center justify-center gap-3 disabled:bg-gray-300 disabled:shadow-none"
                             >
-                                <Ticket className="w-6 h-6" />
-                                {event.availableSeats > 0 ? 'Book Ticket Now' : 'Sold Out'}
+                                {booking ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : <Ticket className="w-6 h-6" />}
+                                {event.availableSeats > 0 ? (booking ? 'Processing...' : 'Book Ticket Now') : 'Sold Out'}
                             </button>
 
                             <p className="text-center text-xs text-gray-400 mt-6">

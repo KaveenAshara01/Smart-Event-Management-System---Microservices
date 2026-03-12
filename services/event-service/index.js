@@ -140,9 +140,14 @@ app.put('/events/:id', authenticate, async (req, res) => {
         const event = await Event.findById(req.params.id);
         if (!event) return res.status(404).json({ message: 'Event not found' });
 
-        // Check ownership (only organizer or admin can edit)
-        if (event.organizerId.toString() !== req.user.userId && req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Unauthorized to edit this event' });
+        // If trying to update anything OTHER than availableSeats, check ownership
+        const fields = Object.keys(req.body);
+        const isOnlySeats = fields.length === 1 && fields[0] === 'availableSeats';
+
+        if (!isOnlySeats) {
+            if (event.organizerId.toString() !== req.user.userId && req.user.role !== 'admin') {
+                return res.status(403).json({ message: 'Unauthorized to edit this event' });
+            }
         }
 
         const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
