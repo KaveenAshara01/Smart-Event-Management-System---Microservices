@@ -64,13 +64,13 @@ const Dashboard = () => {
                         <p className="text-gray-500 text-sm">Discover and book new experiences.</p>
                     </Link>
 
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                            <Ticket className="text-purple-600" />
+                    <Link to="/my-tickets" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
+                        <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors group-hover:bg-purple-600">
+                            <Ticket className="text-purple-600 transition-colors group-hover:text-white" />
                         </div>
                         <h3 className="text-lg font-bold text-gray-900 mb-1">My Tickets</h3>
                         <p className="text-gray-500 text-sm">View and manage your active bookings.</p>
-                    </div>
+                    </Link>
 
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                         <div className="bg-green-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
