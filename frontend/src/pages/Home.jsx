@@ -46,7 +46,7 @@ const Home = () => {
                             Smart Event <span className="text-secondary-400 font-outfit italic">Management</span>
                         </h1>
                         <p className="text-xl text-primary-100 max-w-2xl mx-auto leading-relaxed mb-10 opacity-90">
-                            Discover, plan, and book the most exclusive events in one seamless platform. Professional tools for organizers and effortless discovery for attendees.
+                            Explore, plan, and book the most exclusive events in one seamless platform. Professional tools for organizers and effortless discovery for attendees.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Link to="/events" className="btn-primary h-14 px-10 text-lg shadow-2xl shadow-primary-900/50 flex items-center gap-2 group">
