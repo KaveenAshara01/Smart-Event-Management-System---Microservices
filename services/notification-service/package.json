@@ -11,7 +11,11 @@
     "dependencies": {
         "amqplib": "^0.10.5",
         "nodemailer": "^6.10.0",
-        "dotenv": "^17.3.1"
+        "dotenv": "^17.3.1",
+        "express": "^4.21.2",
+        "mongoose": "^8.9.5",
+        "cors": "^2.8.5",
+        "jsonwebtoken": "^9.0.2"
     },
     "devDependencies": {
         "nodemon": "^3.1.9"

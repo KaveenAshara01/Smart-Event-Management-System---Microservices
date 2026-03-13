@@ -52,7 +52,7 @@ const authenticate = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(403).json({ message: 'Invalid token' });
+        return res.status(403).json({ message: 'Invalid token (Ticket Service)' });
     }
 };
 
@@ -202,5 +202,6 @@ app.get('/tickets/:id', authenticate, async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Ticket Service running on port ${PORT}`);
+    console.log(`[Ticket Service] JWT Secret Status: ${process.env.JWT_SECRET ? 'Loaded' : 'Missing'}`);
     console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`);
 });

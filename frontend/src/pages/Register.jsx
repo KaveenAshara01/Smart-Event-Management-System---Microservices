@@ -58,11 +58,11 @@ const Register = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="text"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         placeholder="John Doe"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -73,11 +73,11 @@ const Register = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="email"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         placeholder="name@example.com"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -88,11 +88,11 @@ const Register = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="password"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         placeholder="••••••••"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -103,9 +103,9 @@ const Register = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
                                 <div className="relative">
-                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Shield className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <select
-                                        className="input-field pl-11 appearance-none"
+                                        className="input-field pl-16 appearance-none"
                                         value={formData.role}
                                         onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                     >

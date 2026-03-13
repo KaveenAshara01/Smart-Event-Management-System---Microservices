@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Save, Loader2, Calendar, MapPin, Tag, Users, DollarSign, Image as ImageIcon } from 'lucide-react';
 
-const CreateEvent = () => {
+const EditEvent = () => {
+    const { id } = useParams();
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -15,33 +16,69 @@ const CreateEvent = () => {
         price: '',
         imageUrl: ''
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const categories = ['Music', 'Tech', 'Food', 'Business', 'Sports', 'Art'];
 
+    useEffect(() => {
+        const fetchEvent = async () => {
+            try {
+                const res = await axios.get(`/api/events/${id}`);
+                const event = res.data;
+                // Format date for datetime-local input
+                const formattedDate = new Date(event.date).toISOString().slice(0, 16);
+                setFormData({
+                    title: event.title,
+                    description: event.description,
+                    date: formattedDate,
+                    location: event.location,
+                    category: event.category,
+                    capacity: event.capacity,
+                    price: event.price,
+                    imageUrl: event.imageUrl
+                });
+            } catch (err) {
+                console.error('Error fetching event for edit:', err);
+                setError('Failed to load event data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEvent();
+    }, [id]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setSaving(true);
         setError('');
         try {
-            await axios.post('/api/events', formData);
-            navigate('/events');
+            await axios.put(`/api/events/${id}`, formData);
+            navigate(`/events/${id}`);
         } catch (err) {
-            setError('Failed to create event. Please check your inputs.');
+            setError('Failed to update event. Please check your inputs.');
             console.error(err);
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <Loader2 className="w-12 h-12 text-primary-600 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-6 md:p-12 font-inter">
             <div className="max-w-3xl mx-auto">
-                <Link to="/events" className="inline-flex items-center text-gray-500 hover:text-primary-600 mb-8 transition-colors">
+                <Link to={`/events/${id}`} className="inline-flex items-center text-gray-500 hover:text-primary-600 mb-8 transition-colors">
                     <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Events
+                    Back to Details
                 </Link>
 
                 <motion.div
@@ -51,8 +88,8 @@ const CreateEvent = () => {
                 >
                     <div className="p-8 md:p-12">
                         <div className="mb-10">
-                            <h2 className="text-3xl font-bold text-gray-900">Create New Event</h2>
-                            <p className="text-gray-500 mt-2">Fill in the details below to publish your event to the community.</p>
+                            <h2 className="text-3xl font-bold text-gray-900">Edit Event Details</h2>
+                            <p className="text-gray-500 mt-2">Update the information for your event.</p>
                         </div>
 
                         {error && (
@@ -69,7 +106,6 @@ const CreateEvent = () => {
                                         type="text"
                                         required
                                         className="input-field"
-                                        placeholder="E.g. Summer Music Festival 2026"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     />
@@ -81,7 +117,6 @@ const CreateEvent = () => {
                                         required
                                         rows="4"
                                         className="input-field py-3 resize-none"
-                                        placeholder="Tell us more about the event..."
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     ></textarea>
@@ -109,7 +144,6 @@ const CreateEvent = () => {
                                             type="text"
                                             required
                                             className="input-field pl-12"
-                                            placeholder="Venue name or address"
                                             value={formData.location}
                                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                         />
@@ -141,7 +175,6 @@ const CreateEvent = () => {
                                             required
                                             min="1"
                                             className="input-field pl-12"
-                                            placeholder="Maximum seats"
                                             value={formData.capacity}
                                             onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                                         />
@@ -157,7 +190,6 @@ const CreateEvent = () => {
                                             required
                                             min="0"
                                             className="input-field pl-12"
-                                            placeholder="Enter 0 for free"
                                             value={formData.price}
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                         />
@@ -173,7 +205,7 @@ const CreateEvent = () => {
                                             ) : (
                                                 <>
                                                     <ImageIcon className="w-10 h-10 text-gray-300 mb-2" />
-                                                    <span className="text-sm text-gray-500">Click to upload banner image</span>
+                                                    <span className="text-sm text-gray-500">Click to change banner image</span>
                                                 </>
                                             )}
                                         </div>
@@ -199,13 +231,13 @@ const CreateEvent = () => {
 
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={saving}
                                 className="w-full btn-primary h-14 text-lg shadow-xl shadow-primary-200 mt-8 flex items-center justify-center gap-3"
                             >
-                                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                                {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                                     <>
                                         <Save className="w-6 h-6" />
-                                        Publish Event
+                                        Save Changes
                                     </>
                                 )}
                             </button>
@@ -217,4 +249,4 @@ const CreateEvent = () => {
     );
 };
 
-export default CreateEvent;
+export default EditEvent;

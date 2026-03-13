@@ -4,38 +4,10 @@ import { Link } from 'react-router-dom';
 import { LogOut, User, Shield, Calendar, Ticket, Settings } from 'lucide-react';
 
 const Dashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navbar */}
-            <nav className="bg-white border-b border-gray-100 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                <h1 className="text-2xl font-bold text-primary-600 tracking-tight flex items-center gap-2 font-outfit">
-                    <Calendar className="w-6 h-6" />
-                    SmartEvents
-                </h1>
-                <div className="flex items-center gap-4 font-inter">
-                    <Link to="/profile" className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full border border-gray-200 hover:bg-gray-200 transition-all">
-                        <img
-                            src={user?.profilePicture}
-                            alt="Profile"
-                            className="w-6 h-6 rounded-full object-cover"
-                        />
-                        <span className="text-sm font-medium text-gray-700">{user?.name}</span>
-                        <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full uppercase font-bold">
-                            {user?.role}
-                        </span>
-                    </Link>
-                    <button
-                        onClick={logout}
-                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                        <LogOut className="w-5 h-5" />
-                    </button>
-                </div>
-            </nav>
-
-            {/* Hero Section */}
             <main className="max-w-7xl mx-auto p-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -64,13 +36,15 @@ const Dashboard = () => {
                         <p className="text-gray-500 text-sm">Discover and book new experiences.</p>
                     </Link>
 
-                    <Link to="/my-tickets" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors group-hover:bg-purple-600">
-                            <Ticket className="text-purple-600 transition-colors group-hover:text-white" />
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">My Tickets</h3>
-                        <p className="text-gray-500 text-sm">View and manage your active bookings.</p>
-                    </Link>
+                    {user?.role !== 'organizer' && (
+                        <Link to="/my-tickets" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
+                            <div className="bg-purple-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors group-hover:bg-purple-600">
+                                <Ticket className="text-purple-600 transition-colors group-hover:text-white" />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">My Tickets</h3>
+                            <p className="text-gray-500 text-sm">View and manage your active bookings.</p>
+                        </Link>
+                    )}
 
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                         <div className="bg-green-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
