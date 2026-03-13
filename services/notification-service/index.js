@@ -123,15 +123,14 @@ async function sendEmail(to, subject, html, attachments = []) {
     }
 }
 
-// --- RabbitMQ Consumer ---
+// --- RabbitMQ Consumers ---
 async function start() {
     try {
         const connection = await amqp.connect(RABBITMQ_URL);
         const channel = await connection.createChannel();
 
+        // 1. Consumer for TICKET_BOOKED
         await channel.assertQueue(QUEUE, { durable: true });
-        channel.prefetch(1);
-
         console.log('[Notification Service] Listening for RabbitMQ messages in %s', QUEUE);
 
         channel.consume(QUEUE, async (msg) => {
@@ -193,6 +192,47 @@ async function start() {
                 channel.ack(msg);
             }
         });
+
+        // 2. Consumer for USER_REGISTERED
+        const REG_QUEUE = 'user_registered';
+        await channel.assertQueue(REG_QUEUE, { durable: true });
+        console.log('[Notification Service] Listening for RabbitMQ messages in %s', REG_QUEUE);
+
+        channel.consume(REG_QUEUE, async (msg) => {
+            if (msg !== null) {
+                const content = JSON.parse(msg.content.toString());
+                console.log('[Notification Service] Received USER_REGISTERED for:', content.email);
+
+                const welcomeHtml = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden;">
+                        <div style="background-color: #6366f1; padding: 40px; text-align: center; color: white;">
+                            <h1 style="margin: 0;">Welcome to SEMS! 🚀</h1>
+                            <p style="opacity: 0.9;">Your journey to smart events starts here.</p>
+                        </div>
+                        <div style="padding: 40px; background-color: white;">
+                            <h2 style="color: #1e293b;">Hello ${content.name},</h2>
+                            <p style="color: #475569; line-height: 1.6;">Thank you for joining the **Smart Event Management System**. We're excited to have you as a ${content.role}!</p>
+                            
+                            <p style="color: #475569; line-height: 1.6;">Now you can explore upcoming events, book tickets, and manage your profile seamlessly.</p>
+                            
+                            <div style="text-align: center; margin: 40px 0;">
+                                <a href="${process.env.FRONTEND_URL || '#'}" style="background-color: #6366f1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 12px; font-weight: bold;">Get Started</a>
+                            </div>
+
+                            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+                            <p style="font-size: 14px; color: #64748b;">If you need any help, feel free to reply to this email.</p>
+                        </div>
+                        <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8;">
+                            &copy; 2026 Smart Event Management System - Microservices
+                        </div>
+                    </div>
+                `;
+
+                await sendEmail(content.email, 'Welcome to SEMS - Account Created!', welcomeHtml);
+                channel.ack(msg);
+            }
+        });
+
     } catch (err) {
         console.error('[Notification Service] RabbitMQ error:', err.message);
         setTimeout(start, 5000);

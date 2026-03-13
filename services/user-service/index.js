@@ -116,6 +116,34 @@ app.post('/auth/register', async (req, res) => {
         const { name, email, password, role } = req.body;
         const user = new User({ name, email, password, role });
         await user.save();
+
+        // --- Publish USER_REGISTERED event to RabbitMQ ---
+        try {
+            const amqp = require('amqplib');
+            const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+            const channel = await connection.createChannel();
+            const queue = 'user_registered';
+
+            const message = JSON.stringify({
+                userId: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                timestamp: new Date().toISOString()
+            });
+
+            await channel.assertQueue(queue, { durable: true });
+            channel.sendToQueue(queue, Buffer.from(message), { persistent: true });
+
+            console.log('[User Service] Published USER_REGISTERED to RabbitMQ');
+
+            setTimeout(() => {
+                connection.close();
+            }, 500);
+        } catch (amqpErr) {
+            console.error('[User Service] RabbitMQ error (User registered, but notification failed):', amqpErr.message);
+        }
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(400).json({ error: err.message });
