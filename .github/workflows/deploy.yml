@@ -25,6 +25,8 @@ jobs:
     # 1. DevSecOps: Security Scanning with Snyk
     - name: Run Snyk to check for vulnerabilities
       uses: snyk/actions/node@master
+      with:
+        args: --all-projects
       continue-on-error: true # Don't block the whole pipeline if minor vulnerabilities found for now
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
