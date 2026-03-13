@@ -75,7 +75,7 @@ jobs:
     - name: Update ECS Services
       run: |
         aws ecs update-service --cluster sems-cluster --service sems-gateway --force-new-deployment
-        aws ecs update-service --cluster sems-cluster --service sems-user-service --force-new-deployment
+        aws ecs update-service --cluster sems-cluster --service sems-user --force-new-deployment
         aws ecs update-service --cluster sems-cluster --service sems-event-service --force-new-deployment
         aws ecs update-service --cluster sems-cluster --service sems-ticket-service --force-new-deployment
         aws ecs update-service --cluster sems-cluster --service sems-notification-service --force-new-deployment
