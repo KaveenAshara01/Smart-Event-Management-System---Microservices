@@ -39,6 +39,18 @@ export const AuthProvider = ({ children }) => {
         return updatedUser;
     };
 
+    const refreshUser = async () => {
+        try {
+            const res = await axios.get('/api/users/profile');
+            const updatedUser = res.data;
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        } catch (err) {
+            console.error('[AuthContext] Refresh user error:', err);
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -47,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, updateProfile, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, updateProfile, logout, refreshUser, loading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -28,9 +28,9 @@ const MyTickets = () => {
             {/* Header */}
             <header className="bg-white border-b border-gray-100 py-10">
                 <div className="max-w-7xl mx-auto px-6">
-                    <Link to="/dashboard" className="flex items-center text-gray-500 hover:text-primary-600 mb-6 transition-colors">
+                    <Link to="/" className="flex items-center text-gray-500 hover:text-primary-600 mb-6 transition-colors">
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        Back to Dashboard
+                        Back to Home
                     </Link>
                     <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
                         My <span className="text-primary-600">Tickets</span>

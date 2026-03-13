@@ -1,8 +1,12 @@
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Tag, Users, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Tag, Users, ArrowRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const EventCard = ({ event }) => {
+    const { user } = useAuth();
+    const isOwner = user && String(event.organizerId) === String(user.id || user._id);
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -16,6 +20,12 @@ const EventCard = ({ event }) => {
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
+                {isOwner && (
+                    <div className="absolute top-4 left-4 bg-secondary-400 text-white px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 border border-white/20 backdrop-blur-sm">
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <span className="text-[10px] font-black uppercase tracking-tighter">Your Event</span>
+                    </div>
+                )}
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
                     <span className="text-sm font-bold text-primary-600">${event.price || 'Free'}</span>
                 </div>

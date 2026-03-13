@@ -12,7 +12,8 @@ const PORT = process.env.PORT || 5002;
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -50,7 +51,7 @@ const authenticate = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(403).json({ message: 'Invalid token' });
+        return res.status(403).json({ message: 'Invalid token (Event Service)' });
     }
 };
 
@@ -63,6 +64,8 @@ const authorize = (roles = []) => {
     };
 };
 
+const { uploadImage } = require('./src/utils/cloudinary');
+
 /**
  * @openapi
  * /events:
@@ -74,8 +77,17 @@ const authorize = (roles = []) => {
  */
 app.post('/events', authenticate, authorize(['organizer', 'admin']), async (req, res) => {
     try {
+        let { imageUrl } = req.body;
+
+        // If imageUrl is a Base64 string, upload to Cloudinary
+        if (imageUrl && imageUrl.startsWith('data:image')) {
+            console.log('[Event Service] Uploading event banner to Cloudinary...');
+            imageUrl = await uploadImage(imageUrl, 'sems/events');
+        }
+
         const eventData = {
             ...req.body,
+            imageUrl,
             organizerId: req.user.userId,
             availableSeats: req.body.capacity
         };
@@ -83,19 +95,13 @@ app.post('/events', authenticate, authorize(['organizer', 'admin']), async (req,
         await event.save();
         res.status(201).json(event);
     } catch (err) {
+        console.error('[Event Service] Create error:', err);
         res.status(400).json({ error: err.message });
     }
 });
 
-/**
- * @openapi
- * /events:
- *   get:
- *     summary: Get all events (with optional category filter)
- *     responses:
- *       200:
- *         description: List of events
- */
+// ... GET routes stay same ...
+
 app.get('/events', async (req, res) => {
     try {
         const { category } = req.query;
@@ -107,15 +113,6 @@ app.get('/events', async (req, res) => {
     }
 });
 
-/**
- * @openapi
- * /events/{id}:
- *   get:
- *     summary: Get event details by ID
- *     responses:
- *       200:
- *         description: Event details
- */
 app.get('/events/:id', async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -150,9 +147,17 @@ app.put('/events/:id', authenticate, async (req, res) => {
             }
         }
 
-        const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        let updateData = { ...req.body };
+        // If imageUrl is a Base64 string, upload to Cloudinary
+        if (updateData.imageUrl && updateData.imageUrl.startsWith('data:image')) {
+            console.log('[Event Service] Updating event banner on Cloudinary...');
+            updateData.imageUrl = await uploadImage(updateData.imageUrl, 'sems/events');
+        }
+
+        const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updateData, { new: true });
         res.json(updatedEvent);
     } catch (err) {
+        console.error('[Event Service] Update error:', err);
         res.status(400).json({ error: err.message });
     }
 });
@@ -184,5 +189,6 @@ app.delete('/events/:id', authenticate, async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Event Service running on port ${PORT}`);
+    console.log(`[Event Service] JWT Secret Status: ${process.env.JWT_SECRET ? 'Loaded' : 'Missing'}`);
     console.log(`Swagger documentation available at http://localhost:${PORT}/api-docs`);
 });
