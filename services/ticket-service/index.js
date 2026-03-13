@@ -112,13 +112,41 @@ app.post('/book', authenticate, async (req, res) => {
 
         await ticket.save();
 
-        // 5. Success
+        // 5. Publish TICKET_BOOKED event to RabbitMQ for Notification Service
+        try {
+            const amqp = require('amqplib');
+            const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+            const channel = await connection.createChannel();
+            const queue = 'ticket_booked';
+
+            const message = JSON.stringify({
+                ticketId: ticket._id,
+                userId: ticket.userId,
+                userName: ticket.userName,
+                userEmail: ticket.userEmail,
+                eventTitle: ticket.eventTitle,
+                qrCode: ticket.qrCode,
+                pricePaid: ticket.pricePaid
+            });
+
+            await channel.assertQueue(queue, { durable: true });
+            channel.sendToQueue(queue, Buffer.from(message), { persistent: true });
+
+            console.log(' [x] Sent TICKET_BOOKED to RabbitMQ');
+
+            setTimeout(() => {
+                connection.close();
+            }, 500);
+        } catch (amqpErr) {
+            console.error('RabbitMQ error (Event not published):', amqpErr.message);
+            // We don't fail the booking if notification fails
+        }
+
+        // 6. Success
         res.status(201).json({
             message: 'Ticket booked successfully',
             ticket
         });
-
-        // TODO: Publish TICKET_BOOKED event to RabbitMQ for Notification Service
 
     } catch (err) {
         console.error('Booking error:', err.response?.data || err.message);
