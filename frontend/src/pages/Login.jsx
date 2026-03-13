@@ -18,7 +18,7 @@ const Login = () => {
         setError('');
         try {
             await login(email, password);
-            navigate('/dashboard');
+            navigate('/');
         } catch (err) {
             setError('Invalid email or password. Please try again.');
         } finally {
@@ -54,11 +54,11 @@ const Login = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="email"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         placeholder="name@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -69,11 +69,11 @@ const Login = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="password"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}

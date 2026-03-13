@@ -14,6 +14,7 @@ const Events = () => {
     const { user } = useAuth();
 
     const categories = ['All', 'Music', 'Tech', 'Food', 'Business', 'Sports', 'Art'];
+    if (user?.role === 'organizer') categories.push('My Events');
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -32,7 +33,17 @@ const Events = () => {
     const filteredEvents = events.filter(event => {
         const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             event.location.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory;
+
+        let matchesCategory = false;
+        if (selectedCategory === 'All') {
+            matchesCategory = true;
+        } else if (selectedCategory === 'My Events') {
+            // Ensure user is defined before accessing properties
+            matchesCategory = user && String(event.organizerId) === String(user.id || user._id);
+        } else {
+            matchesCategory = event.category === selectedCategory;
+        }
+
         return matchesSearch && matchesCategory;
     });
 
@@ -84,8 +95,8 @@ const Events = () => {
                                     key={cat}
                                     onClick={() => setSelectedCategory(cat)}
                                     className={`px-6 py-2 rounded-2xl font-medium transition-all whitespace-nowrap ${selectedCategory === cat
-                                            ? 'bg-primary-600 text-white shadow-md'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? 'bg-primary-600 text-white shadow-md'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
                                     {cat}

@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, ArrowLeft, Save, Loader2, CheckCircle } from 'lucide-react';
+import { User, Camera, ArrowLeft, Save, Loader2, CheckCircle, Mail } from 'lucide-react';
 
 const Profile = () => {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, refreshUser } = useAuth();
     const [name, setName] = useState(user?.name || '');
     const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const freshUser = await refreshUser();
+            if (freshUser) {
+                setName(freshUser.name || '');
+                setProfilePicture(freshUser.profilePicture || '');
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,12 +38,23 @@ const Profile = () => {
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfilePicture(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 p-8 font-inter">
+        <div className="min-h-screen bg-gray-50 p-6 md:p-12 font-inter">
             <div className="max-w-2xl mx-auto">
-                <Link to="/dashboard" className="inline-flex items-center text-gray-500 hover:text-primary-600 mb-8 transition-colors">
+                <Link to="/" className="inline-flex items-center text-gray-500 hover:text-primary-600 mb-8 transition-colors">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Dashboard
+                    Back to Home
                 </Link>
 
                 <motion.div
@@ -45,29 +67,26 @@ const Profile = () => {
                         <p className="text-gray-500 mb-10">Manage your personal information and profile picture</p>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Profile Picture Upload Placeholder */}
+                            {/* Profile Picture Upload */}
                             <div className="flex flex-col items-center space-y-4">
-                                <div className="relative group">
+                                <div className="relative group cursor-pointer" onClick={() => document.getElementById('profile-upload').click()}>
                                     <img
-                                        src={profilePicture}
+                                        src={profilePicture || `https://ui-avatars.com/api/?name=${user?.name}&background=6366f1&color=fff`}
                                         alt="Profile"
-                                        className="w-32 h-32 rounded-full object-cover border-4 border-primary-100 shadow-lg"
+                                        className="w-32 h-32 rounded-full object-cover border-4 border-primary-100 shadow-lg transition-transform group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Camera className="text-white w-8 h-8" />
                                     </div>
-                                </div>
-                                <div className="w-full">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
                                     <input
-                                        type="text"
-                                        className="input-field"
-                                        placeholder="https://example.com/photo.jpg"
-                                        value={profilePicture}
-                                        onChange={(e) => setProfilePicture(e.target.value)}
+                                        id="profile-upload"
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleFileChange}
                                     />
-                                    <p className="text-xs text-gray-400 mt-1 italic">* For this prototype, please provide a direct image URL.</p>
                                 </div>
+                                <p className="text-sm font-medium text-primary-600">Click to change photo</p>
                             </div>
 
                             <hr className="border-gray-100" />
@@ -75,11 +94,11 @@ const Profile = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="text"
                                         required
-                                        className="input-field pl-11"
+                                        className="input-field pl-16"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                     />
@@ -89,11 +108,11 @@ const Profile = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address (Read Only)</label>
                                 <div className="relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="email"
                                         disabled
-                                        className="input-field pl-11 bg-gray-50 cursor-not-allowed opacity-60"
+                                        className="input-field pl-14 bg-gray-50 cursor-not-allowed opacity-60"
                                         value={user?.email}
                                     />
                                 </div>

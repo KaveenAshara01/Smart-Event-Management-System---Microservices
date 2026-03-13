@@ -1,12 +1,15 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+// import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Events from './pages/Events';
+import CreateEvent from './pages/CreateEvent';
 import EventDetails from './pages/EventDetails';
 import MyTickets from './pages/MyTickets';
 import Notifications from './pages/Notifications';
+import Home from './pages/Home';
+import EditEvent from './pages/EditEvent';
 import Navbar from './components/Navbar';
 import { useAuth } from './context/AuthContext';
 
@@ -16,23 +19,23 @@ function App() {
     if (loading) return <div className="h-screen w-screen flex items-center justify-center">Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             {user && <Navbar />}
-            <div className={user ? "pt-0" : ""}>
+            <div className={user ? "pt-20 flex-1" : "flex-1"}>
                 <Routes>
-                    <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
-                    <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
+                    <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+                    <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
 
                     {/* Protected Routes */}
-                    <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+                    <Route path="/dashboard" element={<Navigate to="/" />} />
                     <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
                     <Route path="/events" element={user ? <Events /> : <Navigate to="/login" />} />
                     <Route path="/events/create" element={user ? <CreateEvent /> : <Navigate to="/login" />} />
+                    <Route path="/events/edit/:id" element={user ? <EditEvent /> : <Navigate to="/login" />} />
                     <Route path="/events/:id" element={user ? <EventDetails /> : <Navigate to="/login" />} />
                     <Route path="/my-tickets" element={user ? <MyTickets /> : <Navigate to="/login" />} />
                     <Route path="/notifications" element={user ? <Notifications /> : <Navigate to="/login" />} />
-
-                    <Route path="/" element={<Navigate to="/login" />} />
+                    <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
                 </Routes>
             </div>
         </div>

@@ -1,50 +1,62 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Ticket, User, Calendar, CheckCircle, Info, ArrowLeft, Trash2 } from 'lucide-react';
+import { Bell, Ticket, User, Calendar, CheckCircle, Info, ArrowLeft, Trash2, Share2, Loader2, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Notifications = () => {
-    // In a real app, these would be fetched from the Notification Service or via WebSockets
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            type: 'ticket',
-            title: 'Booking Confirmed!',
-            message: 'Your ticket for Coachella 2026 has been successfully generated.',
-            time: '2 minutes ago',
-            read: false,
-            icon: Ticket,
-            color: 'bg-blue-500'
-        },
-        {
-            id: 2,
-            type: 'profile',
-            title: 'Profile Updated',
-            message: 'Your profile picture and name have been updated successfully.',
-            time: '1 hour ago',
-            read: true,
-            icon: User,
-            color: 'bg-green-500'
-        },
-        {
-            id: 3,
-            type: 'event',
-            title: 'New Event Nearby',
-            message: 'A new Tech Summit has been announced in your area.',
-            time: '5 hours ago',
-            read: true,
-            icon: Calendar,
-            color: 'bg-purple-500'
-        }
-    ]);
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
-    const markAllRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
+    const fetchNotifications = async () => {
+        try {
+            const res = await axios.get('/api/notifications/my-notifications');
+            setNotifications(res.data);
+        } catch (err) {
+            console.error('Error fetching notifications:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const markAllRead = async () => {
+        try {
+            await axios.patch('/api/notifications/read-all');
+            setNotifications(notifications.map(n => ({ ...n, read: true })));
+        } catch (err) {
+            console.error('Failed to mark all as read:', err);
+        }
     };
 
     const clearAll = () => {
+        // Local clear for UI experience, though they remain in DB as read
         setNotifications([]);
     };
+
+    const formatTime = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) return 'Just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+        return date.toLocaleDateString();
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <Loader2 className="w-12 h-12 text-primary-600 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 font-inter pt-28 pb-12">
@@ -77,41 +89,47 @@ const Notifications = () => {
                 <div className="space-y-4">
                     <AnimatePresence mode='popLayout'>
                         {notifications.length > 0 ? (
-                            notifications.map((notif, index) => {
-                                const Icon = notif.icon;
-                                return (
-                                    <motion.div
-                                        key={notif.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className={`p-6 rounded-3xl border ${notif.read ? 'bg-white border-gray-100' : 'bg-white border-primary-100 shadow-lg shadow-primary-50'
-                                            } transition-all hover:border-primary-200 relative group`}
-                                    >
-                                        {!notif.read && (
-                                            <div className="absolute top-6 right-6 w-2 h-2 bg-primary-600 rounded-full"></div>
-                                        )}
+                            notifications.map((notif, index) => (
+                                <motion.div
+                                    key={notif._id || notif.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className={`p-6 rounded-3xl border ${notif.read ? 'bg-white border-gray-100' : 'bg-white border-primary-100 shadow-lg shadow-primary-50'
+                                        } transition-all hover:border-primary-200 relative group`}
+                                >
+                                    {!notif.read && (
+                                        <div className="absolute top-6 right-6 w-2 h-2 bg-primary-600 rounded-full"></div>
+                                    )}
 
-                                        <div className="flex gap-6">
-                                            <div className={`${notif.color} p-4 rounded-2xl text-white shadow-lg`}>
-                                                <Icon className="w-6 h-6" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <h3 className={`font-bold ${notif.read ? 'text-gray-900' : 'text-primary-900'}`}>
-                                                        {notif.title}
-                                                    </h3>
-                                                    <span className="text-xs font-medium text-gray-400">{notif.time}</span>
-                                                </div>
-                                                <p className="text-gray-600 text-sm leading-relaxed">
-                                                    {notif.message}
-                                                </p>
-                                            </div>
+                                    <div className="flex gap-6">
+                                        <div className={`${notif.type === 'EVENT_SHARE' ? 'bg-primary-500' : 'bg-blue-500'} p-4 rounded-2xl text-white shadow-lg h-fit`}>
+                                            {notif.type === 'EVENT_SHARE' ? <Share2 className="w-6 h-6" /> : <Bell className="w-6 h-6" />}
                                         </div>
-                                    </motion.div>
-                                );
-                            })
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className={`font-bold ${notif.read ? 'text-gray-900' : 'text-primary-900'}`}>
+                                                    {notif.senderName} shared an event
+                                                </h3>
+                                                <span className="text-xs font-medium text-gray-400">{formatTime(notif.createdAt)}</span>
+                                            </div>
+                                            <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                                                {notif.message}
+                                            </p>
+
+                                            {notif.eventId && (
+                                                <Link
+                                                    to={`/events/${notif.eventId}`}
+                                                    className="inline-flex items-center gap-2 text-xs font-bold text-primary-600 px-4 py-2 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                                                >
+                                                    View Event <ExternalLink className="w-3 h-3" />
+                                                </Link>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
                         ) : (
                             <motion.div
                                 initial={{ opacity: 0 }}
@@ -121,7 +139,7 @@ const Notifications = () => {
                                 <Bell className="w-16 h-16 text-gray-200 mx-auto mb-6" />
                                 <h3 className="text-xl font-bold text-gray-900">All caught up!</h3>
                                 <p className="text-gray-500 mt-2">No new notifications at the moment.</p>
-                                <Link to="/dashboard" className="btn-primary mt-8 inline-block px-8">Back to Dashboard</Link>
+                                <Link to="/" className="btn-primary mt-8 inline-block px-8">Back to Home</Link>
                             </motion.div>
                         )}
                     </AnimatePresence>
