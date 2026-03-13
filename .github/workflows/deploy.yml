@@ -1,0 +1,76 @@
+name: CI/CD Pipeline (Deploy to ECS)
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  # Add ECR Repo Names
+  GATEWAY_REPO: sems-gateway
+  USER_SERVICE_REPO: sems-user-service
+  EVENT_SERVICE_REPO: sems-event-service
+  TICKET_SERVICE_REPO: sems-ticket-service
+  NOTIFICATION_SERVICE_REPO: sems-notification-service
+  FRONTEND_REPO: sems-frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 1. DevSecOps: Security Scanning with Snyk
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      continue-on-error: true # Don't block the whole pipeline if minor vulnerabilities found for now
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+    # 2. AWS Authentication
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # 3. Build, Tag, and Push Images to Amazon ECR
+    - name: Build and Push Images
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Gateway
+        docker build -t $ECR_REGISTRY/$GATEWAY_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$GATEWAY_REPO:latest ./gateway
+        docker push $ECR_REGISTRY/$GATEWAY_REPO --all-tags
+        
+        # User Service
+        docker build -t $ECR_REGISTRY/$USER_SERVICE_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$USER_SERVICE_REPO:latest ./services/user-service
+        docker push $ECR_REGISTRY/$USER_SERVICE_REPO --all-tags
+        
+        # Event Service
+        docker build -t $ECR_REGISTRY/$EVENT_SERVICE_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$EVENT_SERVICE_REPO:latest ./services/event-service
+        docker push $ECR_REGISTRY/$EVENT_SERVICE_REPO --all-tags
+        
+        # Ticket Service
+        docker build -t $ECR_REGISTRY/$TICKET_SERVICE_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$TICKET_SERVICE_REPO:latest ./services/ticket-service
+        docker push $ECR_REGISTRY/$TICKET_SERVICE_REPO --all-tags
+        
+        # Notification Service
+        docker build -t $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO:latest ./services/notification-service
+        docker push $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO --all-tags
+        
+        # Frontend
+        docker build -t $ECR_REGISTRY/$FRONTEND_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$FRONTEND_REPO:latest ./frontend
+        docker push $ECR_REGISTRY/$FRONTEND_REPO --all-tags
+
+    # 4. (Implementation in Phase 4) Deploy to ECS
+    - name: Deploy Announcement
+      run: echo "Images pushed successfully. Phase 3 Complete. Ready for Phase 4 ECS deployment."
