@@ -69,9 +69,7 @@ jobs:
         docker build -t $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO:latest ./services/notification-service
         docker push $ECR_REGISTRY/$NOTIFICATION_SERVICE_REPO --all-tags
         
-        # Frontend
-        docker build -t $ECR_REGISTRY/$FRONTEND_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$FRONTEND_REPO:latest ./frontend
-        docker push $ECR_REGISTRY/$FRONTEND_REPO --all-tags
+
 
     # 4. Deploy to AWS ECS (Automated Update)
     - name: Update ECS Services
@@ -81,4 +79,3 @@ jobs:
         aws ecs update-service --cluster sems-cluster --service sems-event-service --force-new-deployment
         aws ecs update-service --cluster sems-cluster --service sems-ticket-service --force-new-deployment
         aws ecs update-service --cluster sems-cluster --service sems-notification-service --force-new-deployment
-        aws ecs update-service --cluster sems-cluster --service sems-frontend --force-new-deployment

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://semsf.duckdns.org:4000/api/:path*"
+    }
+  ]
+}
