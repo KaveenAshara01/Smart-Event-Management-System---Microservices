@@ -40,7 +40,7 @@ const Home = () => {
                         transition={{ duration: 0.6 }}
                     >
                         <span className="px-4 py-1.5 bg-primary-500/30 text-primary-100 text-xs font-bold rounded-full uppercase tracking-widest mb-6 inline-block border border-white/10 backdrop-blur-sm">
-                            Experience More123
+                            Experience More
                         </span>
                         <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6">
                             Smart Event <span className="text-secondary-400 font-outfit italic">Management</span>
